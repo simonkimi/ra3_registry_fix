@@ -14,8 +14,6 @@ if(MSVC)
   target_link_options(ra3-registry-helper PRIVATE
     $<$<CONFIG:Release>:/LTCG /OPT:REF /OPT:ICF /INCREMENTAL:NO>
   )
-  set_property(TARGET ra3-registry-helper PROPERTY
-    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif()
 
 target_link_libraries(ra3-registry-helper PRIVATE advapi32 rpcrt4)
