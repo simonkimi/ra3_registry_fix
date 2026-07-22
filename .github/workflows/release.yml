@@ -1,0 +1,45 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure
+        run: >
+          cmake -S . -B build
+          -G "Visual Studio 17 2022"
+          -A x64
+
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      - name: Prepare artifact
+        shell: pwsh
+        run: |
+          $exe = Join-Path $PWD "build/Release/ra3-registry-helper.exe"
+          if (-not (Test-Path $exe)) {
+            throw "ra3-registry-helper.exe not found at $exe"
+          }
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Copy-Item $exe dist/ra3-registry-helper.exe
+          Get-Item dist/ra3-registry-helper.exe | Format-List Name, Length, FullName
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/ra3-registry-helper.exe
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
